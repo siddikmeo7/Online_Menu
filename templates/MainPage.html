@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .cart-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #4CAF50;
+        }
+        .cart-count {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 14px;
+            position: absolute;
+            top: -5px;
+            right: -10px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px; 
+            padding: 10px; 
+        }
+        .card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px; 
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s; 
+        }
+        .card:hover {
+            transform: scale(1.05); 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+        }
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px; 
+        }
+        .price {
+            font-weight: bold;
+            color: #4CAF50; 
+        }
+        .availability {
+            margin-top: 10px;
+            font-weight: bold;
+            color: {{ menu.is_available|yesno:"#4CAF50, #f44336" }}; 
+        }
+        .order-button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            transition: background-color 0.3s; 
+        }
+        .order-button:hover {
+            background-color: #45a049; 
+        }
+
+      
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .cart-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+      
+        @media (max-width: 600px) {
+            .card {
+                width: 100%; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Online Menu</h1>
+    <div class="cart-icon" onclick="toggleCart()">
+        🛒 <span class="cart-count" id="cart-count">0</span>
+    </div>
+    <div class="container">
+        {% for menu in menu_items %}
+            <div class="card">
+                <img src="{{ menu.photo }}" alt="{{ menu.name }} image">
+                <h2>{{ menu.name }}</h2>
+                <p>{{ menu.description }}</p>
+                <p class="price">${{ menu.price }}</p>
+                <p class="availability">{{ menu.is_available|yesno:"Available, Not Available" }}</p>
+                <p>Added on: {{ menu.created_at|date:"F j, Y" }}</p> 
+                <button class="order-button" onclick="addToCart('{{ menu.id }}', '{{ menu.name }}')">Add to Cart</button> 
+            </div>
+        {% endfor %}
+    </div>
+
+ 
+    <div class="cart-modal" id="cart-modal">
+        <div class="cart-content">
+            <span class="close-modal" onclick="toggleCart()">&times;</span>
+            <h2>Your Cart</h2>
+            <ul id="cart-items"></ul>
+            <button onclick="checkout()" style="margin-top: 15px; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        
+        function addToCart(menuId, menuName) {
+            cart.push({ id: menuId, name: menuName });
+            document.getElementById('cart-count').innerText = cart.length;
+            alert('Item ' + menuName + ' added to cart!');
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+            updateCartItems();
+        }
+
+        function updateCartItems() {
+            const cartItemsList = document.getElementById('cart-items');
+            cartItemsList.innerHTML = ''; 
+
+            if (cart.length === 0) {
+                cartItemsList.innerHTML = '<li>Your cart is empty.</li>';
+            } else {
+                cart.forEach(item => {
+                    cartItemsList.innerHTML += `<li>${item.name} <button onclick="removeFromCart('${item.id}')">Remove</button></li>`;
+                });
+            }
+        }
+
+        function removeFromCart(menuId) {
+            cart = cart.filter(item => item.id !== menuId);
+            document.getElementById('cart-count').innerText = cart.length;
+            updateCartItems();
+        }+
+
+        function checkout() {
+           
+            alert('Proceeding to checkout with ' + cart.length + ' items.');
+          
+        }
+    </script>
+</body>
+</html>
